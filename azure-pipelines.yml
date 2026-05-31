@@ -4,51 +4,19 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
-variables:
-  buildConfiguration: 'Release'
-  # Додайте сюди ШЛЯХ до папки, де лежить ваш .sln або .csproj файл
-  PROJECT_PATH: 'src'  # ПРИКЛАД: якщо ваші проекти у папці /src. Змініть на свій!
-
 steps:
-# Завдання: Встановити .NET SDK
-- task: UseDotNet@2
+# Завдання: Скопіювати файли, які нам потрібні
+- task: CopyFiles@2
   inputs:
-    packageType: 'sdk'
-    version: '6.0.x'
-    includePreviewVersions: false
-  displayName: 'Встановлення .NET 6.0 SDK'
+    SourceFolder: '$(Build.SourcesDirectory)'
+    Contents: |
+      flows.json
+      flows_cred.json
+      package.json
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+  displayName: 'Копіювання файлів Node-RED'
 
-# Завдання: Відновити залежності
-- script: |
-    echo "Поточна робоча директорія: $(pwd)"
-    echo "Переходимо в директорію проекту: $(PROJECT_PATH)"
-    cd $(PROJECT_PATH)
-    echo "Нова директорія: $(pwd)"
-    echo "Список файлів:"
-    ls -la
-    echo "Запускаємо dotnet restore..."
-    dotnet restore
-  displayName: 'Restore dependencies'
-
-# Завдання: Виконати збірку
-- script: |
-    cd $(PROJECT_PATH)
-    dotnet build --configuration $(buildConfiguration) --no-restore
-  displayName: 'Build project'
-
-# Завдання: Виконати тести
-- script: |
-    cd $(PROJECT_PATH)
-    dotnet test --no-build --verbosity normal
-  displayName: 'Run tests'
-
-# Завдання: Опублікувати застосунок
-- script: |
-    cd $(PROJECT_PATH)
-    dotnet publish --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory) --no-restore
-  displayName: 'Publish application'
-
-# Завдання: Завантажити артефакт
+# Завдання: Опублікувати артефакт (файли)
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
