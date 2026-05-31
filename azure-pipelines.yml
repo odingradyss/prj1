@@ -8,11 +8,23 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
+# Використовуємо дію для встановлення .NET SDK замість старої задачі UseDotNet@2
 - task: UseDotNet@2
   inputs:
     packageType: 'sdk'
-    version: '3.1.x'
-    includePreviewVersions: true
+    # ЗМІНА: Використовуємо новішу, сумісну версію .NET SDK
+    version: '6.0.x'  
+    includePreviewVersions: false
+
+# Додаємо обхідний шлях для .NET Core 3.1, якщо він вам дійсно потрібен
+- script: |
+    echo "Встановлення .NET Core 3.1 SDK через скрипт..."
+    wget https://dot.net/v1/dotnet-install.sh
+    chmod +x dotnet-install.sh
+    ./dotnet-install.sh --channel 3.1 --install-dir /usr/share/dotnet
+    export PATH="/usr/share/dotnet:$PATH"
+  displayName: 'Встановлення .NET Core 3.1 SDK (сумісний спосіб)'
+  condition: eq(variables['NEED_DOTNET31'], 'true') # За замовчуванням це завдання не виконується
 
 - script: dotnet restore
   displayName: 'Restore dependencies'
