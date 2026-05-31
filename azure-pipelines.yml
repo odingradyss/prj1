@@ -6,39 +6,51 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
+  # Додайте сюди ШЛЯХ до папки, де лежить ваш .sln або .csproj файл
+  PROJECT_PATH: 'src'  # ПРИКЛАД: якщо ваші проекти у папці /src. Змініть на свій!
 
 steps:
-# Використовуємо дію для встановлення .NET SDK замість старої задачі UseDotNet@2
+# Завдання: Встановити .NET SDK
 - task: UseDotNet@2
   inputs:
     packageType: 'sdk'
-    # ЗМІНА: Використовуємо новішу, сумісну версію .NET SDK
-    version: '6.0.x'  
+    version: '6.0.x'
     includePreviewVersions: false
+  displayName: 'Встановлення .NET 6.0 SDK'
 
-# Додаємо обхідний шлях для .NET Core 3.1, якщо він вам дійсно потрібен
+# Завдання: Відновити залежності
 - script: |
-    echo "Встановлення .NET Core 3.1 SDK через скрипт..."
-    wget https://dot.net/v1/dotnet-install.sh
-    chmod +x dotnet-install.sh
-    ./dotnet-install.sh --channel 3.1 --install-dir /usr/share/dotnet
-    export PATH="/usr/share/dotnet:$PATH"
-  displayName: 'Встановлення .NET Core 3.1 SDK (сумісний спосіб)'
-  condition: eq(variables['NEED_DOTNET31'], 'true') # За замовчуванням це завдання не виконується
-
-- script: dotnet restore
+    echo "Поточна робоча директорія: $(pwd)"
+    echo "Переходимо в директорію проекту: $(PROJECT_PATH)"
+    cd $(PROJECT_PATH)
+    echo "Нова директорія: $(pwd)"
+    echo "Список файлів:"
+    ls -la
+    echo "Запускаємо dotnet restore..."
+    dotnet restore
   displayName: 'Restore dependencies'
 
-- script: dotnet build --configuration $(buildConfiguration) --no-restore
+# Завдання: Виконати збірку
+- script: |
+    cd $(PROJECT_PATH)
+    dotnet build --configuration $(buildConfiguration) --no-restore
   displayName: 'Build project'
 
-- script: dotnet test --no-build --verbosity normal
+# Завдання: Виконати тести
+- script: |
+    cd $(PROJECT_PATH)
+    dotnet test --no-build --verbosity normal
   displayName: 'Run tests'
 
-- script: dotnet publish --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
+# Завдання: Опублікувати застосунок
+- script: |
+    cd $(PROJECT_PATH)
+    dotnet publish --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory) --no-restore
   displayName: 'Publish application'
 
+# Завдання: Завантажити артефакт
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'drop'
+  displayName: 'Опублікувати артефакти'
