@@ -1,0 +1,19 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- script: |
+    echo "Deploying Node-RED flow to Docker Hub"
+  displayName: 'Start deployment'
+
+- task: Docker@2
+  inputs:
+    containerRegistry: 'DockerHubConnection'
+    repository: 'odingradyss/node-red-flow'
+    command: 'buildAndPush'
+    Dockerfile: '**/Dockerfile'
+    tags: 'latest'
+  displayName: 'Build and push Docker image'
