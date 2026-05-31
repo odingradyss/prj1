@@ -1,1 +1,134 @@
-[]
+[
+    {
+        "id": "e86c89bde2d36997",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "1",
+        "type": "inject",
+        "z": "e86c89bde2d36997",
+        "name": "Timer 5 сек",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 130,
+        "y": 140,
+        "wires": [
+            [
+                "2"
+            ]
+        ]
+    },
+    {
+        "id": "2",
+        "type": "function",
+        "z": "e86c89bde2d36997",
+        "name": "Temperature Generator",
+        "func": "let temp = (Math.random() * 20 + 15).toFixed(1);\nmsg.payload = parseFloat(temp);\nmsg.topic = \"temperature\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 170,
+        "y": 200,
+        "wires": [
+            [
+                "3",
+                "4"
+            ]
+        ]
+    },
+    {
+        "id": "3",
+        "type": "switch",
+        "z": "e86c89bde2d36997",
+        "name": "Check > 30°C",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "gt",
+                "v": "30",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 360,
+        "y": 140,
+        "wires": [
+            [
+                "5"
+            ]
+        ]
+    },
+    {
+        "id": "4",
+        "type": "debug",
+        "z": "e86c89bde2d36997",
+        "name": "Temperature Logs",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 410,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "5",
+        "type": "template",
+        "z": "e86c89bde2d36997",
+        "name": "Format warning",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "text",
+        "syntax": "plain",
+        "template": "⚠️ : {{payload}} °C",
+        "output": "str",
+        "x": 540,
+        "y": 140,
+        "wires": [
+            [
+                "6"
+            ]
+        ]
+    },
+    {
+        "id": "6",
+        "type": "debug",
+        "z": "e86c89bde2d36997",
+        "name": "Warning",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 700,
+        "y": 140,
+        "wires": []
+    }
+]
